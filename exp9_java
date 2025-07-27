@@ -1,60 +1,73 @@
+#!/bin/bash
+
+# Step 1: Update and Install Java
+
+echo "Updating packages and installing OpenJDK..."
+sudo apt update -y
+sudo apt install openjdk-17-jdk mysql-client wget unzip -y
+
+
+# Step 2: Verify Java
+
+java -version
+javac -version
+
+
+# Step 3: Download MySQL JDBC Driver
+
+
+wget https://dev.mysql.com/get/Downloads/Connector-J/mysql-connector-j-8.4.0.tar.gz
+tar -xvzf mysql-connector-j-8.4.0.tar.gz
+sudo cp mysql-connector-j-8.4.0/mysql-connector-j-8.4.0.jar /usr/share/java/
+
+
+# Step 4: Create Java App (Sample RDS App)
+
+
+JdbcCrudDemo.java
+
 import java.sql.*;
 public class JdbcCrudDemo {
- // Database connection parameters
- static final String JDBC_URL = "jdbc:mysql://localhost:3306/your_database";
- static final String JDBC_USER = "your_username";
- static final String JDBC_PASS = "your_password";
- public static void main(String[] args) {
- try {
- // 1. Load the JDBC driver (optional for newer drivers)
- Class.forName("com.mysql.cj.jdbc.Driver");
- // 2. Establish the connection
- Connection conn = DriverManager.getConnection(JDBC_URL, JDBC_USER, JDBC_PASS);
- // 3. CREATE: Insert a new employee
- String insertSql = "INSERT INTO employees (name, email, country, salary) VALUES (?, ?, ?, ?)";
- PreparedStatement insertStmt = conn.prepareStatement(insertSql);
- insertStmt.setString(1, "Alice");
- insertStmt.setString(2, "alice@example.com");
- insertStmt.setString(3, "USA");
- insertStmt.setDouble(4, 50000);
- insertStmt.executeUpdate();
- System.out.println("Inserted new employee.");
- // 4. READ: Retrieve all employees
- String selectSql = "SELECT * FROM employees";
- Statement selectStmt = conn.createStatement();
- ResultSet rs = selectStmt.executeQuery(selectSql);
- System.out.println("Employee List:");
- while (rs.next()) {
- System.out.println(
- rs.getInt("id") + ", " +
- rs.getString("name") + ", " +
- rs.getString("email") + ", " +
- rs.getString("country") + ", " +
- rs.getDouble("salary")
- );
- }
- // 5. UPDATE: Update employee's salary
- String updateSql = "UPDATE employees SET salary = ? WHERE name = ?";
- PreparedStatement updateStmt = conn.prepareStatement(updateSql);
- updateStmt.setDouble(1, 60000);
- updateStmt.setString(2, "Alice");
- updateStmt.executeUpdate();
- System.out.println("Updated salary for Alice.");
- // 6. DELETE: Delete employee by name
- String deleteSql = "DELETE FROM employees WHERE name = ?";
- PreparedStatement deleteStmt = conn.prepareStatement(deleteSql);
- deleteStmt.setString(1, "Alice");
- deleteStmt.executeUpdate();
- System.out.println("Deleted employee Alice.");
- // 7. Close resources
- deleteStmt.close();
- updateStmt.close();
- rs.close();
- selectStmt.close();
- insertStmt.close();
- conn.close();
- } catch (Exception e) {
- e.printStackTrace();
- }
- }
+    static final String JDBC_URL = "jdbc:mysql://<RDS_ENDPOINT>:3306/<DATABASE_NAME>";
+    static final String JDBC_USER = "<DB_USERNAME>";
+    static final String JDBC_PASS = "<DB_PASSWORD>";
+
+    public static void main(String[] args) {
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            Connection conn = DriverManager.getConnection(JDBC_URL, JDBC_USER, JDBC_PASS);
+
+            String insertSql = "INSERT INTO employees (name, email, country, salary) VALUES (?, ?, ?, ?)";
+            PreparedStatement insertStmt = conn.prepareStatement(insertSql);
+            insertStmt.setString(1, "Alice");
+            insertStmt.setString(2, "alice@example.com");
+            insertStmt.setString(3, "USA");
+            insertStmt.setDouble(4, 50000);
+            insertStmt.executeUpdate();
+            System.out.println("Inserted new employee.");
+
+            String selectSql = "SELECT * FROM employees";
+            Statement selectStmt = conn.createStatement();
+            ResultSet rs = selectStmt.executeQuery(selectSql);
+            System.out.println("Employee List:");
+            while (rs.next()) {
+                System.out.println(
+                    rs.getInt("id") + ", " +
+                    rs.getString("name") + ", " +
+                    rs.getString("email") + ", " +
+                    rs.getString("country") + ", " +
+                    rs.getDouble("salary")
+                );
+            }
+
+            insertStmt.close();
+            selectStmt.close();
+            rs.close();
+            conn.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }
+javac -cp libs/* MyProgram.java
+java -cp .:libs/* MyProgram
