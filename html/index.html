@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title> CIE</title>
+        <link rel="manifest" href="manifest.json">
+    </head>
+    <body>
+        <div class="container">
+            <h1> CIE </h1>
+            <input type="text" id="username" placeholder="Enter your username">
+            <input type="password" id="password" placeholder="Enter your password">
+            <button id="loginButton">Login</button>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th> Stock Symbol</th>
+                        <th> Price</th>
+                    </tr>
+                </thead>
+
+            </table>
+
+            <input type="text" id="github" placeholder="Enter Github Profile Name">
+            <button id="githubButton" onclick="getgit()">Fetch Github Profile</button>
+
+            <div >
+                <img src="" id="image" alt=""Github Profile Image">
+                <p id="info"></p>
+            </div>
+            
+    </body>
+    <script>
+        if('serviceWorker' in navigator){
+            window.addEventListener('load', function(){
+                navigator.serviceWorker.register('sw.js')
+                .then(console.log('Service Worker Registered'))
+                .catch(error=> console.log('Error'));
+            })
+        }
+
+        function getgit()
+        {
+            var url="https://api.github.com/users/" + document.getElementById("github").value;
+            fetch(url)
+            .then(response=> {
+                if(response.ok){
+                    const resclone=response.clone();
+                    caches.open('CIE').then(cache=>cache.put(url,resclone));
+                    return response.json();
+                }
+            })
+            .then(data =>{
+                var img = document.getElementById("image");
+                var info = document.getElementById("info");
+                img.src = data.avatar_url;
+                info.innerHTML=JSON.stringify(data);
+            })       
+            .catch(error=> console.log(error));
+             }
+
+             window.addEventListener('DOMContentLoaded',function(){
+                fetch('stocks.json')
+                .then(response => response.json())
+
+                .then(data=>{
+                    data.forEach(stocks => {
+                    const table=document.querySelector('table');
+                    const tr=document.createElement('tr');
+                    const td=document.createElement('td');
+                    td.innerText=stocks.stocks;
+                    tr.appendChild(td);
+                    const td2=document.createElement('td');
+                    td2.innerText=stocks.price;
+                    tr.appendChild(td2);
+                    table.appendChild(tr);
+                    
+                });
+            });
+             });
+    </script>
+</html>
